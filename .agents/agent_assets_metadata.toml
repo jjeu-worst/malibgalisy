@@ -5,16 +5,16 @@ outputs = []
 id = "BVaUxCQWBwT3LgBUH8VoV"
 uri = "file://artifacts/ramadan-tracker/public/icon-512.png"
 type = "image"
-title = "school app icon 512"
+title = "formal M icon 512"
 
 [[generated]]
 id = "lHEY1qtFvu9molObqUs7_"
 uri = "file://artifacts/ramadan-tracker/public/icon-192.png"
 type = "image"
-title = "school app icon 192"
+title = "formal M icon 192"
 
 [[generated]]
 id = "Xl3QsqzdXEJABrg1175Oe"
 uri = "file://artifacts/ramadan-tracker/public/apple-touch-icon.png"
 type = "image"
-title = "apple touch icon"
+title = "formal M apple touch icon"
