@@ -1,3 +1,7 @@
 {
-  "version": 2
+  "version": 2,
+  "buildCommand": "cd artifacts/ramadan-tracker && pnpm install && pnpm build",
+  "outputDirectory": "artifacts/ramadan-tracker/dist",
+  "installCommand": "pnpm install",
+  "framework": "vite"
 }
