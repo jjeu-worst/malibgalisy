@@ -1,6 +1,0 @@
-{
-  "buildCommand": "pnpm --filter @workspace/ramadan-tracker run build",
-  "outputDirectory": "artifacts/ramadan-tracker/dist/public",
-  "installCommand": "pnpm install",
-  "framework": null
-}

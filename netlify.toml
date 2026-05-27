@@ -1,0 +1,11 @@
+[build]
+  command = "pnpm --filter @workspace/ramadan-tracker run build"
+  publish = "artifacts/ramadan-tracker/dist/public"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
