@@ -242,20 +242,26 @@ export default function GuruPage() {
 
             {/* Modal Tambah Tugas */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-                    <div className="relative z-10 w-full max-w-md bg-white rounded-t-[32px] shadow-2xl flex flex-col" style={{ maxHeight: "88vh" }}>
+                <div className="fixed inset-0 z-50 flex flex-col justify-end">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
 
-                        {/* Header — selalu kelihatan */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0 border-b border-slate-100">
+                    {/* Sheet */}
+                    <div className="relative z-10 w-full bg-white rounded-t-[28px] shadow-2xl">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100">
                             <h2 className="text-base font-black text-slate-800">Tugas Baru</h2>
                             <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
                                 <X className="w-4 h-4 text-slate-500" />
                             </button>
                         </div>
 
-                        {/* Form — bagian yang bisa di-scroll */}
-                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+                        {/* Form — scrollable, tinggi fix supaya iOS bisa scroll */}
+                        <div
+                            style={{ height: "52vh", overflowY: "scroll", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+                            className="px-6 py-4 space-y-3"
+                        >
                             <div>
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Judul Tugas *</label>
                                 <input
@@ -300,7 +306,7 @@ export default function GuruPage() {
                             <div>
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Deskripsi (opsional)</label>
                                 <textarea
-                                    rows={3}
+                                    rows={2}
                                     placeholder="Keterangan tambahan..."
                                     value={form.deskripsi}
                                     onChange={e => setForm({ ...form, deskripsi: e.target.value })}
@@ -309,11 +315,11 @@ export default function GuruPage() {
                             </div>
                         </div>
 
-                        {/* Tombol — selalu kelihatan di bawah */}
-                        <div className="px-6 pt-3 pb-8 shrink-0 border-t border-slate-100">
+                        {/* Tombol — di luar area scroll, selalu kelihatan */}
+                        <div className="px-6 pt-3 pb-10 border-t border-slate-100">
                             <button
                                 onClick={handleTambah}
-                                className="w-full bg-teal-600 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-teal-700 active:scale-95 transition-all"
+                                className="w-full bg-teal-600 text-white rounded-2xl py-4 text-sm font-bold hover:bg-teal-700 active:scale-95 transition-all shadow-lg shadow-teal-200"
                             >
                                 Simpan Tugas
                             </button>
