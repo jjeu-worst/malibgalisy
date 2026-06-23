@@ -1,20 +1,13 @@
-import { ArrowLeft, ChevronRight, BookOpen, Plus } from "lucide-react";
+import { ArrowLeft, ChevronRight, BookOpen, Plus, Trash2, X, ClipboardList } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BottomNav from "../components/BottomNav";
 
-const kelas = [
+const kelasList = [
     { nama: "XII IPA", mapel: "Matematika", siswa: 34, jadwal: "Senin 07.00" },
     { nama: "XII IPS", mapel: "Matematika", siswa: 33, jadwal: "Selasa 08.30" },
     { nama: "XI IPA", mapel: "Matematika", siswa: 34, jadwal: "Rabu 07.00" },
     { nama: "XI IPS", mapel: "Matematika", siswa: 35, jadwal: "Kamis 10.15" },
-];
-
-const tugas = [
-    { mapel: "Matematika", judul: "Latihan Soal Integral", kelas: "XII IPA", deadline: "30 Mei 2026", dikumpul: 28, total: 34 },
-    { mapel: "Matematika", judul: "PR Limit Fungsi", kelas: "XII IPS", deadline: "1 Jun 2026", dikumpul: 20, total: 33 },
-    { mapel: "Matematika", judul: "Kuis Bab Trigonometri", kelas: "XI IPA", deadline: "2 Jun 2026", dikumpul: 34, total: 34 },
-    { mapel: "Matematika", judul: "Latihan UAS", kelas: "XI IPS", deadline: "5 Jun 2026", dikumpul: 10, total: 35 },
 ];
 
 const absensiSiswa = Array.from({ length: 8 }, (_, i) => ({
@@ -23,6 +16,20 @@ const absensiSiswa = Array.from({ length: 8 }, (_, i) => ({
 }));
 
 const tabs = ["Kelas", "Tugas", "Absensi"];
+
+const pilihanKelas = ["XII IPA", "XII IPS", "XI IPA", "XI IPS"];
+
+interface Tugas {
+    id: string;
+    judul: string;
+    mapel: string;
+    kelas: string;
+    deadline: string;
+    deskripsi: string;
+    tanggalDibuat: string;
+}
+
+const STORAGE_KEY = "malibgalis_tugas_guru";
 
 function statusBadge(s: string) {
     if (s === "hadir") return "bg-green-100 text-green-700";
@@ -33,10 +40,64 @@ function statusBadge(s: string) {
 
 export default function GuruPage() {
     const [tab, setTab] = useState("Kelas");
-    const [kelasAktif, setKelasAktif] = useState(kelas[0]);
+    const [kelasAktif, setKelasAktif] = useState(kelasList[0]);
+    const [tugasList, setTugasList] = useState<Tugas[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [form, setForm] = useState({
+        judul: "",
+        mapel: "",
+        kelas: "XII IPA",
+        deadline: "",
+        deskripsi: "",
+    });
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) setTugasList(JSON.parse(saved));
+        } catch {}
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tugasList));
+    }, [tugasList]);
+
+    function handleTambah() {
+        if (!form.judul.trim() || !form.mapel.trim() || !form.deadline) return;
+        const newTugas: Tugas = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+            judul: form.judul.trim(),
+            mapel: form.mapel.trim(),
+            kelas: form.kelas,
+            deadline: form.deadline,
+            deskripsi: form.deskripsi.trim(),
+            tanggalDibuat: new Date().toLocaleDateString("id-ID", {
+                day: "numeric", month: "short", year: "numeric",
+            }),
+        };
+        setTugasList(prev => [newTugas, ...prev]);
+        setForm({ judul: "", mapel: "", kelas: "XII IPA", deadline: "", deskripsi: "" });
+        setShowModal(false);
+    }
+
+    function handleHapus(id: string) {
+        if (confirm("Hapus tugas ini?")) {
+            setTugasList(prev => prev.filter(t => t.id !== id));
+        }
+    }
+
+    const deadlineLabel = (d: string) => {
+        try {
+            return new Date(d).toLocaleDateString("id-ID", {
+                day: "numeric", month: "short", year: "numeric",
+            });
+        } catch { return d; }
+    };
 
     return (
         <main className="min-h-screen bg-slate-50 pb-24">
+
+            {/* Header */}
             <div className="relative bg-gradient-to-br from-[#134e4a] via-[#0f766e] to-[#0369a1] text-white rounded-b-[32px] shadow-xl overflow-hidden pt-12 pb-8 px-6 mb-6">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-12 -mt-12"></div>
                 <div className="absolute bottom-0 left-0 w-36 h-36 bg-amber-500/20 rounded-full blur-3xl -ml-8 -mb-8"></div>
@@ -63,7 +124,7 @@ export default function GuruPage() {
                             <p className="text-[9px] text-teal-200">Siswa</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-lg font-black text-white">4</p>
+                            <p className="text-lg font-black text-white">{tugasList.length}</p>
                             <p className="text-[9px] text-teal-200">Tugas Aktif</p>
                         </div>
                     </div>
@@ -71,6 +132,7 @@ export default function GuruPage() {
             </div>
 
             <div className="px-5 max-w-md mx-auto">
+                {/* Tab Selector */}
                 <div className="flex bg-white rounded-2xl p-1 shadow-sm border border-slate-100 mb-5">
                     {tabs.map(t => (
                         <button
@@ -83,9 +145,10 @@ export default function GuruPage() {
                     ))}
                 </div>
 
+                {/* Tab: Kelas */}
                 {tab === "Kelas" && (
                     <div className="space-y-3">
-                        {kelas.map((k, i) => (
+                        {kelasList.map((k, i) => (
                             <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center shrink-0">
                                     <BookOpen className="w-5 h-5 text-teal-600" />
@@ -101,47 +164,53 @@ export default function GuruPage() {
                     </div>
                 )}
 
+                {/* Tab: Tugas */}
                 {tab === "Tugas" && (
                     <div className="space-y-3">
-                        <button className="w-full bg-teal-600 text-white rounded-2xl py-3 flex items-center justify-center gap-2 font-bold text-sm hover:bg-teal-700 transition-colors">
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="w-full bg-teal-600 text-white rounded-2xl py-3 flex items-center justify-center gap-2 font-bold text-sm hover:bg-teal-700 transition-colors"
+                        >
                             <Plus className="w-4 h-4" /> Buat Tugas Baru
                         </button>
-                        {tugas.map((t, i) => {
-                            const pct = Math.round((t.dikumpul / t.total) * 100);
-                            return (
-                                <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <p className="text-xs font-bold text-teal-500 mb-0.5">{t.kelas}</p>
-                                            <p className="text-sm font-bold text-slate-800">{t.judul}</p>
-                                            <p className="text-[10px] text-slate-400">Deadline: {t.deadline}</p>
-                                        </div>
-                                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${pct === 100 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                                            {pct}%
-                                        </span>
+
+                        {tugasList.length === 0 && (
+                            <div className="text-center py-12 text-slate-400">
+                                <ClipboardList className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                                <p className="text-sm font-medium">Belum ada tugas</p>
+                                <p className="text-xs mt-1">Klik tombol di atas untuk menambahkan tugas</p>
+                            </div>
+                        )}
+
+                        {tugasList.map((t) => (
+                            <div key={t.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                                <div className="flex justify-between items-start mb-1">
+                                    <div className="flex-1">
+                                        <p className="text-xs font-bold text-teal-500 mb-0.5">{t.kelas} · {t.mapel}</p>
+                                        <p className="text-sm font-bold text-slate-800">{t.judul}</p>
+                                        <p className="text-[10px] text-slate-400">Deadline: {deadlineLabel(t.deadline)}</p>
                                     </div>
-                                    <div className="mt-3">
-                                        <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-                                            <span>Dikumpul: {t.dikumpul}/{t.total}</span>
-                                            <span>{t.total - t.dikumpul} belum</span>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-teal-600 rounded-full transition-all"
-                                                style={{ width: `${pct}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
+                                    <button
+                                        onClick={() => handleHapus(t.id)}
+                                        className="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center hover:bg-red-100 transition-colors shrink-0 ml-2 mt-0.5"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                                    </button>
                                 </div>
-                            );
-                        })}
+                                {t.deskripsi && (
+                                    <p className="text-xs text-slate-500 leading-relaxed mt-2 pt-2 border-t border-slate-100">{t.deskripsi}</p>
+                                )}
+                                <p className="text-[9px] text-slate-300 mt-2">Dibuat: {t.tanggalDibuat}</p>
+                            </div>
+                        ))}
                     </div>
                 )}
 
+                {/* Tab: Absensi */}
                 {tab === "Absensi" && (
                     <div className="space-y-3">
                         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar mb-2">
-                            {kelas.map((k, i) => (
+                            {kelasList.map((k, i) => (
                                 <button
                                     key={i}
                                     onClick={() => setKelasAktif(k)}
@@ -151,9 +220,7 @@ export default function GuruPage() {
                                 </button>
                             ))}
                         </div>
-
                         <p className="text-xs text-slate-500 px-1">Hari ini · {kelasAktif.nama} · {kelasAktif.mapel}</p>
-
                         <div className="space-y-2">
                             {absensiSiswa.map((s, i) => (
                                 <div key={i} className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-slate-100 flex items-center justify-between">
@@ -172,6 +239,82 @@ export default function GuruPage() {
                     </div>
                 )}
             </div>
+
+            {/* Modal Tambah Tugas */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+                    <div className="relative z-10 w-full max-w-md bg-white rounded-t-[32px] p-6 pb-10 shadow-2xl">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-base font-black text-slate-800">Tugas Baru</h2>
+                            <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <X className="w-4 h-4 text-slate-500" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Judul Tugas *</label>
+                                <input
+                                    type="text"
+                                    placeholder="Contoh: Latihan Soal Integral"
+                                    value={form.judul}
+                                    onChange={e => setForm({ ...form, judul: e.target.value })}
+                                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Mata Pelajaran *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Matematika"
+                                        value={form.mapel}
+                                        onChange={e => setForm({ ...form, mapel: e.target.value })}
+                                        className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Kelas</label>
+                                    <select
+                                        value={form.kelas}
+                                        onChange={e => setForm({ ...form, kelas: e.target.value })}
+                                        className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
+                                    >
+                                        {pilihanKelas.map(k => <option key={k} value={k}>{k}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Deadline *</label>
+                                <input
+                                    type="date"
+                                    value={form.deadline}
+                                    onChange={e => setForm({ ...form, deadline: e.target.value })}
+                                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Deskripsi (opsional)</label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Keterangan tambahan..."
+                                    value={form.deskripsi}
+                                    onChange={e => setForm({ ...form, deskripsi: e.target.value })}
+                                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition resize-none"
+                                />
+                            </div>
+                            <button
+                                onClick={handleTambah}
+                                className="w-full bg-teal-600 text-white rounded-xl py-3 text-sm font-bold hover:bg-teal-700 transition-colors mt-1"
+                            >
+                                Simpan Tugas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <BottomNav />
         </main>
     );
