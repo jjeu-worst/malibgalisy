@@ -244,7 +244,8 @@ export default function GuruPage() {
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-                    <div className="relative z-10 w-full max-w-md bg-white rounded-t-[32px] p-6 pb-10 shadow-2xl">
+                    <div className="relative z-10 w-full max-w-md bg-white rounded-t-[32px] shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
+                        <div className="overflow-y-auto overscroll-contain p-6 pb-10">
                         <div className="flex items-center justify-between mb-5">
                             <h2 className="text-base font-black text-slate-800">Tugas Baru</h2>
                             <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
@@ -310,6 +311,7 @@ export default function GuruPage() {
                             >
                                 Simpan Tugas
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
